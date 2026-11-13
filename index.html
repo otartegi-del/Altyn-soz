@@ -1,0 +1,785 @@
+<!doctype html>
+<html lang="kk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B7F99">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Алтын Сөз">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Алтын Сөз</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700&family=Noto+Serif:wght@600;700&display=swap">
+<style>
+/* Layout: one narrow column. Sky-blue and gold masthead, a row of game tabs, one game panel below. */
+:root {
+  --bg: #EEF5F8;
+  --surface: #FFFFFF;
+  --fg: #0D2231;
+  --muted: #566B79;
+  --line: #CFDDE5;
+  --accent: #0B7F99;
+  --accent-fg: #FFFFFF;
+  --gold: #E8AE00;
+  --ok: #2B9468;
+  --ok-fg: #FFFFFF;
+  --warn: #E8AE00;
+  --warn-fg: #2A1F00;
+  --off: #62737F;
+  --off-fg: #FFFFFF;
+  --bad: #C8453B;
+  --bad-fg: #FFFFFF;
+  --font-display: 'Noto Serif', Georgia, 'Times New Roman', serif;
+  --font-body: 'Noto Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0A1A25; --surface: #12283A; --fg: #E8F2F6; --muted: #9DB3C0; --line: #274256;
+    --accent: #46C6E0; --accent-fg: #06222C; --gold: #F2C230;
+    --ok: #34A874; --ok-fg: #04180F; --warn: #F2C230; --warn-fg: #241B00;
+    --off: #3C5262; --off-fg: #E8F2F6; --bad: #F0766C; --bad-fg: #2B0A07;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0A1A25; --surface: #12283A; --fg: #E8F2F6; --muted: #9DB3C0; --line: #274256;
+  --accent: #46C6E0; --accent-fg: #06222C; --gold: #F2C230;
+  --ok: #34A874; --ok-fg: #04180F; --warn: #F2C230; --warn-fg: #241B00;
+  --off: #3C5262; --off-fg: #E8F2F6; --bad: #F0766C; --bad-fg: #2B0A07;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; }
+
+.wrap {
+  max-width: 560px;
+  margin: 0 auto;
+  padding-block: 22px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+.mast { text-align: center; padding-bottom: 14px; }
+.mast svg { display: block; margin: 0 auto 8px; fill: var(--gold); }
+.mast h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+}
+.mast p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+.tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-block: 4px 12px;
+  scrollbar-width: thin;
+}
+.tab {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--fg);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.tab[aria-selected="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 20px 16px;
+  min-width: 0;
+}
+.panel h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+.hint { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+
+.btn {
+  border: 0;
+  background: var(--accent);
+  color: var(--accent-fg);
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--line);
+}
+.actions { display: flex; justify-content: center; gap: 10px; margin-top: 16px; }
+.msg { min-height: 1.6em; text-align: center; font-weight: 500; margin-top: 4px; }
+
+/* Сөз тап */
+.board { display: grid; gap: 6px; max-width: 320px; margin: 18px auto 8px; }
+.row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.tile {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  font-weight: 700;
+  font-size: clamp(20px, 7vw, 28px);
+  transition: background-color .3s, border-color .3s, color .3s;
+}
+.tile.filled { border-color: var(--muted); }
+.tile.ok { background: var(--ok); border-color: var(--ok); color: var(--ok-fg); }
+.tile.warn { background: var(--warn); border-color: var(--warn); color: var(--warn-fg); }
+.tile.off { background: var(--off); border-color: var(--off); color: var(--off-fg); }
+.kb { display: grid; gap: 6px; margin-top: 10px; }
+.krow { display: flex; gap: 4px; justify-content: center; }
+.key {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 40px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--line);
+  color: var(--fg);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+.key.wide { flex: 1.7 1 0; max-width: 62px; font-size: 12px; }
+.key.ok { background: var(--ok); color: var(--ok-fg); }
+.key.warn { background: var(--warn); color: var(--warn-fg); }
+.key.off { background: var(--off); color: var(--off-fg); }
+
+/* Викторина және мақал-мәтел */
+.meta { display: flex; justify-content: space-between; margin-top: 14px; font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress { display: flex; gap: 4px; margin-top: 14px; }
+.progress i { flex: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.progress i.done { background: var(--accent); }
+.q { font-family: var(--font-display); font-size: 21px; line-height: 1.4; margin: 14px 0 16px; text-wrap: balance; }
+.blank {
+  display: inline-block;
+  min-width: 4.5em;
+  padding: 0 4px;
+  border-bottom: 2px solid var(--gold);
+  color: var(--accent);
+  text-align: center;
+}
+.opts { display: grid; gap: 8px; }
+.opt {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--fg);
+  padding: 12px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+.opt.right { background: var(--ok); border-color: var(--ok); color: var(--ok-fg); font-weight: 700; }
+.opt.wrong { background: var(--bad); border-color: var(--bad); color: var(--bad-fg); }
+.opt[disabled] { cursor: default; }
+.result { text-align: center; padding: 14px 0 4px; }
+.big { font-family: var(--font-display); font-size: 48px; font-weight: 700; color: var(--accent); line-height: 1.1; }
+.result p { margin: 8px 0; }
+
+/* Жұптау */
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+.card {
+  aspect-ratio: 1;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: 4px;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: clamp(13px, 4vw, 18px);
+  overflow-wrap: anywhere;
+}
+.card.shut::after { content: "\25C6"; opacity: .45; font-size: 22px; }
+.card.open { background: var(--bg); color: var(--fg); }
+.card.done { background: var(--ok); border-color: var(--ok); color: var(--ok-fg); cursor: default; }
+.card .em { font-size: clamp(28px, 9vw, 40px); line-height: 1; }
+
+/* Сөз іздеу */
+.ws { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; margin-top: 14px; }
+.cell {
+  aspect-ratio: 1;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font-weight: 700;
+  font-size: clamp(13px, 4.2vw, 18px);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.cell.start { background: var(--gold); color: var(--warn-fg); }
+.cell.found { background: var(--ok); color: var(--ok-fg); }
+.words { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.chip { padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; font-weight: 500; }
+.chip.done { background: var(--ok); border-color: var(--ok); color: var(--ok-fg); text-decoration: line-through; }
+
+.foot { margin-top: 18px; text-align: center; color: var(--muted); font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* Қосымша ретінде жұмыс істеуге арналған негізгі ережелер */
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){color-scheme:dark}}
+html{-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+img{max-width:100%}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="mast">
+    <svg width="56" height="10" viewBox="0 0 56 10" aria-hidden="true"><path d="M5 0l5 5-5 5-5-5zM16 0l5 5-5 5-5-5zM27 0l5 5-5 5-5-5zM38 0l5 5-5 5-5-5zM49 0l5 5-5 5-5-5z"/></svg>
+    <h1>Алтын Сөз</h1>
+    <p>Қазақша сөз ойындары</p>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist" aria-label="Ойындар"></nav>
+  <main class="panel" id="panel" role="tabpanel"></main>
+  <footer class="foot">Үздік нәтижелер осы құрылғыда сақталады.</footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var KK = 'kk';
+  var up = function (s) { return s.toLocaleUpperCase(KK); };
+  var lo = function (s) { return s.toLocaleLowerCase(KK); };
+  var $ = function (s) { return document.querySelector(s); };
+
+  function h(tag, props) {
+    var e = document.createElement(tag);
+    if (props) {
+      Object.keys(props).forEach(function (k) {
+        var v = props[k];
+        if (k === 'class') e.className = v;
+        else if (k === 'text') e.textContent = v;
+        else if (k.indexOf('on') === 0) e.addEventListener(k.slice(2), v);
+        else if (v === true) e.setAttribute(k, '');
+        else if (v !== false && v != null) e.setAttribute(k, v);
+      });
+    }
+    var kids = Array.prototype.slice.call(arguments, 2);
+    kids.forEach(function (c) {
+      if (Array.isArray(c)) { c.forEach(function (x) { e.append(x); }); }
+      else if (c != null && c !== false) { e.append(c.nodeType ? c : document.createTextNode(c)); }
+    });
+    return e;
+  }
+  var store = {
+    get: function (k, d) { try { var v = localStorage.getItem('as_' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set: function (k, v) { try { localStorage.setItem('as_' + k, JSON.stringify(v)); } catch (e) {} }
+  };
+  function shuffle(a) {
+    a = a.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+  function sample(a, n) { return shuffle(a).slice(0, n); }
+  function verdict(s, n) {
+    var r = s / n;
+    if (r >= 0.9) return 'Керемет! Нағыз білгір екенсіз.';
+    if (r >= 0.6) return 'Жақсы нәтиже. Тағы бір рет ойнап көріңіз.';
+    return 'Тағы бір рет байқап көріңіз, келесіде жақсырақ болады.';
+  }
+
+  /* ---------- Деректер ---------- */
+  var WORDS = (function () {
+    var raw = ('сәлем кітап қалам жылқы бөрік ғалам орман тамақ сүйек бауыр мұрын көрпе табақ қасық пышақ қазан тоқаш ' +
+      'қымыз шұбат айран сүзбе жеміс қауын сәбіз қызыл жасыл үлкен жақын тәтті дәмді батыл момын қонақ ұстаз ' +
+      'оқушы жұмыс күлкі қобыз кесте өрнек кілем шапан тақия сәуле боран аспан теңіз алтын күміс темір сенім бақыт ' +
+      'халық пойыз көлік көпір үйрек тауық қораз түлкі қыран қарға балық жылан сағат дүкен базар сабақ сынып бөлме ' +
+      'төсек үстел шатыр қабат бақша тамыр бұтақ жүзім қайың терек бесік сіңлі келін күйеу ұрпақ').split(' ');
+    var seen = {};
+    return raw.filter(function (w) {
+      if (Array.from(w).length !== 5 || seen[w]) return false;
+      seen[w] = true; return true;
+    });
+  })();
+  var ROWS = ['әғқңөұүһі', 'йцукенгшщзхъ', 'фывапролджэ', 'ячсмитьбю'];
+
+  // [сұрақ, дұрыс жауап, қате, қате, қате]
+  var QUIZ = [
+    ['Қазақстанның астанасы қай қала?', 'Астана', 'Алматы', 'Шымкент', 'Қарағанды'],
+    ['Қазақстан Тәуелсіздігін қай жылы жариялады?', '1991', '1985', '1995', '2001'],
+    ['Қазақ халқының ұлттық аспабы қайсы?', 'Домбыра', 'Баян', 'Скрипка', 'Гитара'],
+    ['«Абай жолы» романының авторы кім?', 'Мұхтар Әуезов', 'Сәкен Сейфуллин', 'Ілияс Жансүгіров', 'Мағжан Жұмабаев'],
+    ['Наурыз мейрамы жылдың қай мезгілінде тойланады?', 'Көктемде', 'Жазда', 'Күзде', 'Қыста'],
+    ['Қазақстанның ұлттық валютасы қалай аталады?', 'Теңге', 'Сом', 'Рубль', 'Манат'],
+    ['Тоғызқұмалақ ойынында әр ойыншыда неше шұңқыр бар?', '9', '7', '12', '18'],
+    ['Қазақ хандығы қай ғасырда құрылды?', 'XV ғасырда', 'X ғасырда', 'XVIII ғасырда', 'XX ғасырда'],
+    ['Қазақ хандығының негізін салған сұлтандар кімдер?', 'Керей мен Жәнібек', 'Абылай мен Кенесары', 'Тәуке мен Есім', 'Қасым мен Хақназар'],
+    ['Қорқыт ата қай аспаппен байланысты?', 'Қобыз', 'Сырнай', 'Дабыл', 'Жетіген'],
+    ['«Шөл кемесі» деп қай жануарды атайды?', 'Түйе', 'Жылқы', 'Есек', 'Қой'],
+    ['Ғарышқа ұшқан тұңғыш қазақ ғарышкері кім?', 'Тоқтар Әубәкіров', 'Талғат Мұсабаев', 'Айдын Айымбетов', 'Нұрсұлтан Назарбаев'],
+    ['Қазақстан туындағы негізгі түс қандай?', 'Көгілдір', 'Қызыл', 'Жасыл', 'Ақ'],
+    ['Құрманғазы кім болған?', 'Күйші, композитор', 'Мемлекет қайраткері', 'Географ', 'Сәулетші'],
+    ['Судың қайнау температурасы қанша (қалыпты қысымда)?', '100 °C', '90 °C', '120 °C', '80 °C'],
+    ['Күннен санағанда Жер нешінші планета?', 'Үшінші', 'Екінші', 'Төртінші', 'Бесінші'],
+    ['Қазақ әліпбиіндегі әріптер саны (кирилл жазуы) қанша?', '42', '33', '29', '36'],
+    ['Жылда қанша ай бар?', '12', '10', '11', '13']
+  ].map(function (a) { return { q: a[0], a: a[1], w: a.slice(2) }; });
+
+  // [басы, соңы, қате, қате]
+  var PROVERBS = [
+    ['Білекті бірді жығады,', 'білімді мыңды жығады.', 'ақылды елді жығады.', 'жүйрік жерді жығады.'],
+    ['Жеті рет өлшеп,', 'бір рет кес.', 'жеті рет кес.', 'бір рет сына.'],
+    ['Бірлігі жоқ ел тозар,', 'бірлігі күшті ел озар.', 'байлығы көп ел озар.', 'жері кең ел озар.'],
+    ['Көп түкірсе', 'көл болар.', 'жол болар.', 'тау болар.'],
+    ['Өнерлі өрге жүзер,', 'өнерсіз кері кетер.', 'жалқау ілгері кетер.', 'сабырлы жерде қалар.'],
+    ['Жақсы сөз —', 'жарым ырыс.', 'бір жұтым су.', 'алтын қазына.'],
+    ['Отан', 'оттан да ыстық.', 'судан да таза.', 'таудан да биік.'],
+    ['Ұяда не көрсең,', 'ұшқанда соны ілерсің.', 'жолда соны табарсың.', 'өскенде соны айтарсың.'],
+    ['Оқусыз білім жоқ,', 'білімсіз күнің жоқ.', 'еңбексіз тойың жоқ.', 'досыңсыз үйің жоқ.'],
+    ['Еңбек етсең — ерінбей,', 'тояды қарның тіленбей.', 'жетер ырыс сұрамай.', 'болар мақсат күнбе-күн.'],
+    ['Көш жүре', 'түзеледі.', 'бұзылады.', 'тоқтайды.'],
+    ['Бірлік болмай,', 'тірлік болмас.', 'жарлық болмас.', 'ырыс болмас.']
+  ].map(function (a) { return { start: a[0], a: a[1], w: a.slice(2) }; });
+
+  var PAIRS = [['жылқы', '🐴'], ['түйе', '🐪'], ['қой', '🐑'], ['сиыр', '🐄'], ['ешкі', '🐐'], ['түлкі', '🦊'],
+    ['қасқыр', '🐺'], ['қоян', '🐇'], ['аю', '🐻'], ['балық', '🐟'], ['жылан', '🐍'], ['алма', '🍎'],
+    ['жүзім', '🍇'], ['күн', '☀️'], ['ай', '🌙'], ['гүл', '🌸'], ['үй', '🏠'], ['тауық', '🐔']];
+
+  var WS_POOL = ['ДОМБЫРА', 'ЖЫЛҚЫ', 'НАУРЫЗ', 'ДАЛА', 'ТҮЙЕ', 'ШАҢЫРАҚ', 'АСТАНА', 'ҚОБЫЗ', 'КІТАП', 'АЛТЫН', 'ОТАН',
+    'БАЛА', 'ҚАЛАМ', 'КЕСТЕ', 'ТЕҢІЗ', 'ЖҰЛДЫЗ', 'ҚЫМЫЗ', 'ОРМАН', 'СӘЛЕМ', 'АСПАН', 'ҚЫРАН', 'ҚАРҒА'];
+
+  /* ---------- Бағыттау ---------- */
+  var GAMES = [
+    { id: 'wordle', name: 'Сөз тап', fn: wordle },
+    { id: 'viktorina', name: 'Викторина', fn: quiz },
+    { id: 'juptau', name: 'Жұптау', fn: match },
+    { id: 'makal', name: 'Мақал-мәтел', fn: proverbs },
+    { id: 'soz-izdeu', name: 'Сөз іздеу', fn: wordsearch }
+  ];
+  var tabs = $('#tabs'), panel = $('#panel'), cleanup = null;
+  GAMES.forEach(function (g) {
+    g.btn = h('button', { class: 'tab', type: 'button', role: 'tab', id: 'tab-' + g.id, onclick: function () { location.hash = g.id; } }, g.name);
+    tabs.append(g.btn);
+  });
+  function route() {
+    var id = location.hash.slice(1);
+    var g = GAMES.filter(function (x) { return x.id === id; })[0] || GAMES[0];
+    if (cleanup) { cleanup(); cleanup = null; }
+    GAMES.forEach(function (x) { x.btn.setAttribute('aria-selected', String(x === g)); });
+    panel.replaceChildren();
+    panel.setAttribute('aria-labelledby', 'tab-' + g.id);
+    cleanup = g.fn(panel) || null;
+    try { g.btn.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) {}
+  }
+  window.addEventListener('hashchange', route);
+
+  /* ---------- Сөз тап (Wordle) ---------- */
+  function evaluate(g, t) {
+    var gl = Array.from(g), tl = Array.from(t), res = [0, 1, 2, 3, 4].map(function () { return 'off'; });
+    var used = [false, false, false, false, false];
+    var i;
+    for (i = 0; i < 5; i++) if (gl[i] === tl[i]) { res[i] = 'ok'; used[i] = true; }
+    for (i = 0; i < 5; i++) {
+      if (res[i] === 'ok') continue;
+      for (var j = 0; j < 5; j++) {
+        if (!used[j] && tl[j] === gl[i]) { res[i] = 'warn'; used[j] = true; break; }
+      }
+    }
+    return res;
+  }
+
+  function wordle(root) {
+    var ALPHA = ROWS.join('');
+    var RANK = { off: 1, warn: 2, ok: 3 };
+    var target = '', last = '', guesses = [], cur = [], over = false;
+    var tiles = [], keyEls = {}, keyRank = {};
+    var msg = h('div', { class: 'msg', 'aria-live': 'polite' });
+    var board = h('div', { class: 'board' });
+    for (var r = 0; r < 6; r++) {
+      var row = h('div', { class: 'row' });
+      tiles[r] = [];
+      for (var c = 0; c < 5; c++) { tiles[r][c] = h('div', { class: 'tile' }); row.append(tiles[r][c]); }
+      board.append(row);
+    }
+    function mkKey(label, k, cls) {
+      var aria = k === 'Enter' ? 'Енгізу' : k === 'Back' ? 'Өшіру' : label;
+      return h('button', { class: 'key' + (cls ? ' ' + cls : ''), type: 'button', 'aria-label': aria, onclick: function () { press(k); } }, label);
+    }
+    var kb = h('div', { class: 'kb' });
+    ROWS.forEach(function (rowStr, i) {
+      var kr = h('div', { class: 'krow' });
+      if (i === 3) kr.append(mkKey('Енгіз', 'Enter', 'wide'));
+      Array.from(rowStr).forEach(function (ch) { var b = mkKey(up(ch), ch); keyEls[ch] = b; kr.append(b); });
+      if (i === 3) kr.append(mkKey('⌫', 'Back', 'wide'));
+      kb.append(kr);
+    });
+
+    function say(t) { msg.textContent = t; }
+    function drawRow() {
+      var r = guesses.length;
+      if (r > 5) return;
+      for (var c = 0; c < 5; c++) {
+        var ch = cur[c] || '';
+        tiles[r][c].textContent = up(ch);
+        tiles[r][c].classList.toggle('filled', !!ch);
+      }
+    }
+    function press(k) {
+      if (over) return;
+      if (k === 'Enter') return submit();
+      if (k === 'Back') { cur.pop(); say(''); return drawRow(); }
+      if (cur.length < 5) { cur.push(k); say(''); drawRow(); }
+    }
+    function submit() {
+      if (cur.length < 5) { say('Әріп жетіспейді: сөз 5 әріптен тұруы керек.'); return; }
+      var g = cur.join(''), r = guesses.length, res = evaluate(g, target);
+      guesses.push(g);
+      res.forEach(function (s, i) {
+        var t = tiles[r][i];
+        t.style.transitionDelay = (i * 110) + 'ms';
+        t.classList.add(s);
+        var ch = Array.from(g)[i];
+        if (!keyRank[ch] || RANK[s] > keyRank[ch]) {
+          keyRank[ch] = RANK[s];
+          keyEls[ch].className = 'key ' + s;
+        }
+      });
+      cur = [];
+      if (g === target) { over = true; say('Тамаша! ' + (r + 1) + '-әрекетте таптыңыз.'); }
+      else if (guesses.length === 6) { over = true; say('Сөз: ' + up(target)); }
+      else say('');
+    }
+    function reset() {
+      do { target = WORDS[Math.floor(Math.random() * WORDS.length)]; } while (target === last && WORDS.length > 1);
+      last = target; guesses = []; cur = []; over = false; keyRank = {};
+      tiles.forEach(function (row) { row.forEach(function (t) { t.className = 'tile'; t.textContent = ''; t.style.transitionDelay = ''; }); });
+      Object.keys(keyEls).forEach(function (k) { keyEls[k].className = 'key'; });
+      say('');
+    }
+    function onKey(e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      var onBtn = e.target && e.target.closest && e.target.closest('button');
+      if (e.key === 'Enter') { if (!onBtn) press('Enter'); }
+      else if (e.key === 'Backspace') press('Back');
+      else {
+        var l = lo(e.key);
+        if (Array.from(l).length === 1 && ALPHA.indexOf(l) > -1) press(l);
+      }
+    }
+    document.addEventListener('keydown', onKey);
+
+    root.append(
+      h('h2', { text: 'Сөз тап' }),
+      h('p', { class: 'hint', text: '5 әріптен тұратын жасырын сөзді 6 әрекетте тап. Жасыл: әріп өз орнында. Сары: сөзде бар, орны басқа. Сұр: сөзде жоқ. Кез келген 5 әріптен тұратын жорамал қабылданады.' }),
+      board, msg, kb,
+      h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', text: 'Жаңа сөз', onclick: reset }))
+    );
+    reset();
+    return function () { document.removeEventListener('keydown', onKey); };
+  }
+
+  /* ---------- Таңдау ойындары (викторина, мақал-мәтел) ---------- */
+  function choiceGame(root, cfg) {
+    var items, i, score, locked;
+    var body = h('div');
+    root.append(h('h2', { text: cfg.title }), h('p', { class: 'hint', text: cfg.hint }), body);
+
+    function start() { items = sample(cfg.items, cfg.count); i = 0; score = 0; render(); }
+    function render() {
+      if (i >= items.length) return finish();
+      var it = items[i]; locked = false;
+      var progress = h('div', { class: 'progress' }, items.map(function (_, k) { return h('i', { class: k < i ? 'done' : '' }); }));
+      var scoreEl = h('span', { text: 'Ұпай: ' + score });
+      var meta = h('div', { class: 'meta' }, h('span', { text: 'Сұрақ ' + (i + 1) + ' / ' + items.length }), scoreEl);
+      var qBox = h('div', { class: 'q' }, cfg.q(it, false));
+      var feedback = h('div', { class: 'msg', 'aria-live': 'polite' });
+      var next = h('button', { class: 'btn', type: 'button', hidden: true, text: i === items.length - 1 ? 'Нәтиже' : 'Келесі', onclick: function () { i++; render(); } });
+      var opts = h('div', { class: 'opts' });
+      var btns = shuffle([it.a].concat(it.w)).map(function (o) {
+        var b = h('button', { class: 'opt', type: 'button', text: o, onclick: function () { choose(b, o); } });
+        return b;
+      });
+      btns.forEach(function (b) { opts.append(b); });
+      function choose(btn, val) {
+        if (locked) return; locked = true;
+        var good = val === it.a;
+        if (good) score++;
+        btns.forEach(function (b) {
+          b.disabled = true;
+          if (b.textContent === it.a) b.classList.add('right');
+        });
+        if (!good) btn.classList.add('wrong');
+        scoreEl.textContent = 'Ұпай: ' + score;
+        qBox.replaceChildren(cfg.q(it, true));
+        feedback.textContent = good ? 'Дұрыс!' : 'Дұрыс жауап: ' + it.a;
+        next.hidden = false;
+        next.focus();
+      }
+      body.replaceChildren(progress, meta, qBox, opts, feedback, h('div', { class: 'actions' }, next));
+    }
+    function finish() {
+      var best = Math.max(store.get(cfg.key, 0), score);
+      store.set(cfg.key, best);
+      body.replaceChildren(h('div', { class: 'result' },
+        h('div', { class: 'big', text: score + ' / ' + items.length }),
+        h('p', { text: verdict(score, items.length) }),
+        h('p', { class: 'hint', text: 'Үздік нәтиже: ' + best + ' / ' + items.length }),
+        h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', text: 'Қайта ойнау', onclick: start }))
+      ));
+    }
+    start();
+  }
+
+  function quiz(root) {
+    choiceGame(root, {
+      title: 'Викторина',
+      hint: 'Қазақстан, мәдениет және жалпы білім туралы 8 сұрақ. Әр ойында сұрақтар араласады.',
+      items: QUIZ, count: 8, key: 'quiz_best',
+      q: function (it) { return document.createTextNode(it.q); }
+    });
+  }
+
+  function proverbs(root) {
+    var items = PROVERBS.map(function (p) { return { start: p.start, a: p.a, w: p.w }; });
+    choiceGame(root, {
+      title: 'Мақал-мәтел',
+      hint: 'Мақалдың жалғасын тап. Дұрыс жауапты таңда.',
+      items: items, count: 8, key: 'makal_best',
+      q: function (it, revealed) {
+        return h('span', null, it.start + ' ', h('span', { class: 'blank' }, revealed ? it.a : ' '));
+      }
+    });
+  }
+
+  /* ---------- Жұптау ---------- */
+  function match(root) {
+    var cards, open, locked, moves, matched, secs, timer = null, timeout = null, total = 8;
+    var grid = h('div', { class: 'cards' });
+    var movesEl = h('span'), timeEl = h('span'), resultEl = h('div', { 'aria-live': 'polite' });
+    function fmt(s) { return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    function paint(c) {
+      var el = c.el;
+      el.className = 'card ' + (c.done ? 'done' : c.open ? 'open' : 'shut');
+      el.replaceChildren();
+      if (c.open || c.done) {
+        if (c.type === 'e') el.append(h('span', { class: 'em', text: c.t }));
+        else el.append(c.t);
+      }
+      el.setAttribute('aria-label', (c.open || c.done) ? (c.type === 'e' ? 'Сурет ' + c.t : c.t) : 'Жабық карта');
+    }
+    function flip(c) {
+      if (locked || c.open || c.done) return;
+      if (!timer && moves === 0 && open.length === 0) {
+        timer = setInterval(function () { secs++; timeEl.textContent = 'Уақыт: ' + fmt(secs); }, 1000);
+      }
+      c.open = true; open.push(c); paint(c);
+      if (open.length < 2) return;
+      moves++; movesEl.textContent = 'Қадам: ' + moves;
+      var a = open[0], b = open[1];
+      if (a.id === b.id) {
+        a.done = b.done = true; a.open = b.open = false; paint(a); paint(b); open = []; matched++;
+        if (matched === total) win();
+      } else {
+        locked = true;
+        timeout = setTimeout(function () {
+          a.open = b.open = false; paint(a); paint(b); open = []; locked = false; timeout = null;
+        }, 800);
+      }
+    }
+    function win() {
+      stop();
+      var best = store.get('match_best', 0);
+      var isBest = !best || moves < best;
+      if (isBest) store.set('match_best', moves);
+      resultEl.replaceChildren(h('div', { class: 'result' },
+        h('div', { class: 'big', text: moves + ' қадам' }),
+        h('p', { text: 'Барлық жұп табылды. Уақыт: ' + fmt(secs) + '.' }),
+        h('p', { class: 'hint', text: isBest ? 'Жаңа рекорд!' : 'Үздік нәтиже: ' + best + ' қадам' })
+      ));
+    }
+    function start() {
+      stop(); if (timeout) { clearTimeout(timeout); timeout = null; }
+      open = []; locked = false; moves = 0; matched = 0; secs = 0;
+      movesEl.textContent = 'Қадам: 0'; timeEl.textContent = 'Уақыт: 00:00';
+      resultEl.replaceChildren();
+      var pick = sample(PAIRS, total), list = [];
+      pick.forEach(function (p, i) {
+        list.push({ id: i, type: 'w', t: p[0] });
+        list.push({ id: i, type: 'e', t: p[1] });
+      });
+      cards = shuffle(list);
+      grid.replaceChildren();
+      cards.forEach(function (c) {
+        c.open = false; c.done = false;
+        c.el = h('button', { type: 'button', onclick: function () { flip(c); } });
+        paint(c); grid.append(c.el);
+      });
+    }
+    root.append(
+      h('h2', { text: 'Жұптау' }),
+      h('p', { class: 'hint', text: 'Қазақша сөзді оның суретімен жұптастыр. Аз қадаммен бәрін аш.' }),
+      h('div', { class: 'meta' }, movesEl, timeEl),
+      grid, resultEl,
+      h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', text: 'Жаңа ойын', onclick: start }))
+    );
+    start();
+    return function () { stop(); if (timeout) clearTimeout(timeout); };
+  }
+
+  /* ---------- Сөз іздеу ---------- */
+  var N = 10;
+  function makeGrid(words) {
+    var DIRS = [[0, 1], [1, 0], [1, 1], [-1, 1]];
+    var FILL = Array.from('АЫЕІОҰҮҚҒҢТРНЛМДСКБЗЖШ');
+    var best = null;
+    for (var attempt = 0; attempt < 200; attempt++) {
+      var g = [], placed = [], ok = true, r, c;
+      for (r = 0; r < N; r++) { g.push(new Array(N).fill('')); }
+      var order = words.slice().sort(function (a, b) { return b.length - a.length; });
+      for (var wi = 0; wi < order.length && ok; wi++) {
+        var L = Array.from(order[wi]), done = false;
+        for (var t = 0; t < 300 && !done; t++) {
+          var d = DIRS[Math.floor(Math.random() * DIRS.length)];
+          var r0 = Math.floor(Math.random() * N), c0 = Math.floor(Math.random() * N);
+          var r1 = r0 + d[0] * (L.length - 1), c1 = c0 + d[1] * (L.length - 1);
+          if (r1 < 0 || r1 >= N || c1 < 0 || c1 >= N) continue;
+          var fits = true, k;
+          for (k = 0; k < L.length; k++) {
+            var v = g[r0 + d[0] * k][c0 + d[1] * k];
+            if (v && v !== L[k]) { fits = false; break; }
+          }
+          if (!fits) continue;
+          for (k = 0; k < L.length; k++) g[r0 + d[0] * k][c0 + d[1] * k] = L[k];
+          placed.push(order[wi]); done = true;
+        }
+        if (!done) ok = false;
+      }
+      best = g;
+      if (ok) break;
+    }
+    for (var rr = 0; rr < N; rr++) for (var cc = 0; cc < N; cc++) {
+      if (!best[rr][cc]) best[rr][cc] = FILL[Math.floor(Math.random() * FILL.length)];
+    }
+    return best;
+  }
+
+  function wordsearch(root) {
+    var words, grid, found, startCell, foundCells, cells = [], chips = {};
+    var gridEl = h('div', { class: 'ws', role: 'grid', 'aria-label': 'Әріптер торы' });
+    var wordsEl = h('div', { class: 'words' });
+    var msg = h('div', { class: 'msg', 'aria-live': 'polite' });
+    var countEl = h('div', { class: 'meta' });
+    function say(t) { msg.textContent = t; }
+    function key(r, c) { return r + ',' + c; }
+    function paintCell(r, c) {
+      var el = cells[r][c];
+      var isStart = startCell && startCell[0] === r && startCell[1] === c;
+      el.className = 'cell' + (foundCells[key(r, c)] ? ' found' : '') + (isStart ? ' start' : '');
+    }
+    function repaintAll() { for (var r = 0; r < N; r++) for (var c = 0; c < N; c++) paintCell(r, c); }
+    function count() { countEl.replaceChildren(h('span', { text: 'Табылды: ' + found.length + ' / ' + words.length })); }
+    function tap(r, c) {
+      if (found.length === words.length) return;
+      if (!startCell) { startCell = [r, c]; say(''); return repaintAll(); }
+      if (startCell[0] === r && startCell[1] === c) { startCell = null; return repaintAll(); }
+      var dr = r - startCell[0], dc = c - startCell[1];
+      if (!(dr === 0 || dc === 0 || Math.abs(dr) === Math.abs(dc))) { startCell = [r, c]; say(''); return repaintAll(); }
+      var n = Math.max(Math.abs(dr), Math.abs(dc)), sr = Math.sign(dr), sc = Math.sign(dc), s = '', coords = [];
+      for (var k = 0; k <= n; k++) {
+        var rr = startCell[0] + sr * k, cc = startCell[1] + sc * k;
+        coords.push([rr, cc]); s += grid[rr][cc];
+      }
+      var rev = Array.from(s).reverse().join('');
+      var w = words.filter(function (x) { return found.indexOf(x) === -1 && (x === s || x === rev); })[0];
+      startCell = null;
+      if (w) {
+        found.push(w);
+        coords.forEach(function (p) { foundCells[key(p[0], p[1])] = true; });
+        chips[w].classList.add('done');
+        count();
+        say(found.length === words.length ? 'Тамаша! Барлық сөзді таптыңыз.' : 'Дұрыс: ' + w);
+      } else say('Мұндай сөз жоқ. Қайта байқап көріңіз.');
+      repaintAll();
+    }
+    function start() {
+      words = sample(WS_POOL, 6); grid = makeGrid(words);
+      found = []; startCell = null; foundCells = {}; cells = []; chips = {};
+      gridEl.replaceChildren(); wordsEl.replaceChildren(); say('');
+      for (var r = 0; r < N; r++) {
+        cells[r] = [];
+        for (var c = 0; c < N; c++) {
+          (function (r, c) {
+            var b = h('button', { type: 'button', class: 'cell', text: grid[r][c], role: 'gridcell', onclick: function () { tap(r, c); } });
+            cells[r][c] = b; gridEl.append(b);
+          })(r, c);
+        }
+      }
+      words.slice().sort().forEach(function (w) { chips[w] = h('span', { class: 'chip', text: w }); wordsEl.append(chips[w]); });
+      count();
+    }
+    root.append(
+      h('h2', { text: 'Сөз іздеу' }),
+      h('p', { class: 'hint', text: 'Тордан тізімдегі сөздерді тап. Сөздің бірінші әрпін, содан кейін соңғы әрпін таңда. Сөз көлденең, тік немесе қиғаш орналасады.' }),
+      countEl, gridEl, msg, wordsEl,
+      h('div', { class: 'actions' }, h('button', { class: 'btn ghost', type: 'button', text: 'Жаңа тор', onclick: start }))
+    );
+    start();
+  }
+
+  route();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  });
+}
+</script>
+
+</body>
+</html>
